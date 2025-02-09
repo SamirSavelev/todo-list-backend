@@ -3,9 +3,13 @@ import cors from 'cors';
 import authRoutes from './routes/auth';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger';
+import { connectDB } from './config/db';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Подключаемся к базе данных
+connectDB();
 
 // Middleware для работы с JSON и CORS
 app.use(express.json());

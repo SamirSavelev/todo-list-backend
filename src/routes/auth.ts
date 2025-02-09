@@ -2,6 +2,8 @@
 
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+// Импортируем функции для работы с файлом
+import { loadUsers, saveUsers } from '../utils/storage';
 
 const router = Router();
 
@@ -68,7 +70,7 @@ const router = Router();
  *         description: Внутренняя ошибка сервера.
  */
 
-// Интерфейс пользователя
+// Определяем интерфейс для пользователя (опционально, для типизации)
 interface User {
   id: number;
   email: string;
@@ -76,9 +78,6 @@ interface User {
   lastName: string;
   password: string; // Храним хеш пароля
 }
-
-// Временное хранилище пользователей (пока в памяти)
-const users: User[] = [];
 
 // POST /auth/register - регистрация пользователя
 router.post('/register', async (req: Request, res: Response): Promise<void> => {
@@ -91,7 +90,10 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Проверка, существует ли уже пользователь с такой почтой
+    // Загружаем пользователей из файла
+    const users: User[] = await loadUsers();
+
+    // Проверяем, существует ли пользователь с таким email
     const existingUser = users.find((user) => user.email === email);
     if (existingUser) {
       res
@@ -100,23 +102,24 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Хэширование пароля с использованием bcrypt
+    // Хэшируем пароль
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Создание нового пользователя
+    // Создаем нового пользователя
     const newUser: User = {
-      id: Date.now(), // Для простоты используем timestamp в качестве id
+      id: Date.now(), // Используем timestamp как id
       email,
       firstName,
       lastName,
       password: hashedPassword,
     };
 
-    // Сохраняем пользователя в массив
+    // Добавляем пользователя в массив и сохраняем в файл
     users.push(newUser);
+    await saveUsers(users);
 
-    // Возвращаем успешный ответ
+    // Отправляем успешный ответ
     res.status(201).json({
       message: 'Пользователь успешно зарегистрирован',
       userId: newUser.id,
