@@ -1,5 +1,8 @@
+// src/index.ts
+
 import express from 'express';
 import cors from 'cors';
+import authRoutes from './routes/auth'; // Импортируем маршруты для аутентификации
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -8,7 +11,10 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-// Простой тестовый роут
+// Подключаем маршруты для аутентификации (регистрация, авторизация)
+app.use('/auth', authRoutes);
+
+// Тестовый роут для проверки сервера
 app.get('/', (req, res) => {
   res.send('Backend работает!');
 });
