@@ -5,6 +5,69 @@ import bcrypt from 'bcryptjs';
 
 const router = Router();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     RegisterUser:
+ *       type: object
+ *       required:
+ *         - email
+ *         - firstName
+ *         - lastName
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           example: test@example.com
+ *         firstName:
+ *           type: string
+ *           example: Иван
+ *         lastName:
+ *           type: string
+ *           example: Иванов
+ *         password:
+ *           type: string
+ *           example: 123456
+ *
+ *     RegisterResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: Пользователь успешно зарегистрирован
+ *         userId:
+ *           type: number
+ *           example: 1675971234567
+ */
+
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     tags:
+ *       - auth
+ *     summary: Регистрация нового пользователя
+ *     description: Регистрация пользователя с email, именем, фамилией и паролем.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterUser'
+ *     responses:
+ *       201:
+ *         description: Пользователь успешно зарегистрирован.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RegisterResponse'
+ *       400:
+ *         description: Неверные данные или пользователь с такой почтой уже существует.
+ *       500:
+ *         description: Внутренняя ошибка сервера.
+ */
+
 // Интерфейс пользователя
 interface User {
   id: number;

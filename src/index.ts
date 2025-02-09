@@ -1,8 +1,8 @@
-// src/index.ts
-
 import express from 'express';
 import cors from 'cors';
-import authRoutes from './routes/auth'; // Импортируем маршруты для аутентификации
+import authRoutes from './routes/auth';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swagger';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,8 +11,11 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-// Подключаем маршруты для аутентификации (регистрация, авторизация)
+// Подключаем маршруты для аутентификации
 app.use('/auth', authRoutes);
+
+// Маршрут для документации Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Тестовый роут для проверки сервера
 app.get('/', (req, res) => {
