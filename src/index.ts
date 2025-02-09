@@ -1,8 +1,15 @@
+// src/index.ts
+
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth';
+import profileRoutes from './routes/profile'; // импортируем маршруты профиля
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './swagger';
+import { config } from 'dotenv';
+
+// Загружаем переменные окружения (если используете .env)
+config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,13 +18,16 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-// Подключаем маршруты для аутентификации
+// Подключаем маршруты аутентификации
 app.use('/auth', authRoutes);
+
+// Подключаем маршрут получения профиля (защищённый авторизацией)
+app.use('/profile', profileRoutes);
 
 // Маршрут для документации Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Тестовый роут для проверки сервера
+// Тестовый роут
 app.get('/', (req, res) => {
   res.send('Backend работает!');
 });
