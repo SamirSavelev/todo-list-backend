@@ -1,9 +1,9 @@
 // src/routes/auth.ts
 
-import { Router, Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
-import jwt, { VerifyErrors } from 'jsonwebtoken';
-import { loadUsers, saveUsers } from '../utils/storage';
+import { Router, Request, Response } from "express";
+import bcrypt from "bcryptjs";
+import jwt, { VerifyErrors } from "jsonwebtoken";
+import { loadUsers, saveUsers } from "../utils/storage";
 
 const router = Router();
 
@@ -114,13 +114,13 @@ interface User {
  *         description: Внутренняя ошибка сервера.
  */
 // POST /auth/register - регистрация пользователя
-router.post('/register', async (req: Request, res: Response): Promise<void> => {
+router.post("/register", async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, firstName, lastName, password } = req.body;
 
     // Проверка обязательных полей
     if (!email || !firstName || !lastName || !password) {
-      res.status(400).json({ message: 'Пожалуйста, заполните все поля' });
+      res.status(400).json({ message: "Пожалуйста, заполните все поля" });
       return;
     }
 
@@ -132,7 +132,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
     if (existingUser) {
       res
         .status(400)
-        .json({ message: 'Пользователь с такой почтой уже существует' });
+        .json({ message: "Пользователь с такой почтой уже существует" });
       return;
     }
 
@@ -155,12 +155,12 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
 
     // Возвращаем успешный ответ
     res.status(201).json({
-      message: 'Пользователь успешно зарегистрирован',
+      message: "Пользователь успешно зарегистрирован",
       userId: newUser.id,
     });
   } catch (error) {
-    console.error('Ошибка регистрации:', error);
-    res.status(500).json({ message: 'Ошибка сервера' });
+    console.error("Ошибка регистрации:", error);
+    res.status(500).json({ message: "Ошибка сервера" });
   }
 });
 
@@ -191,14 +191,14 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
  *         description: Внутренняя ошибка сервера.
  */
 // POST /auth/login - аутентификация пользователя
-router.post('/login', async (req: Request, res: Response): Promise<void> => {
+router.post("/login", async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       res
         .status(400)
-        .json({ message: 'Пожалуйста, предоставьте email и пароль' });
+        .json({ message: "Пожалуйста, предоставьте email и пароль" });
       return;
     }
 
@@ -208,34 +208,34 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
     // Ищем пользователя по email
     const user = users.find((user) => user.email === email);
     if (!user) {
-      res.status(400).json({ message: 'Неверные учетные данные' });
+      res.status(400).json({ message: "Неверные учетные данные" });
       return;
     }
 
     // Сравниваем пароль
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      res.status(400).json({ message: 'Неверные учетные данные' });
+      res.status(400).json({ message: "Неверные учетные данные" });
       return;
     }
 
     // Генерация токенов
     const accessToken = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.ACCESS_TOKEN_SECRET || 'youraccesstokensecret',
-      { expiresIn: '15m' } // Access токен действителен 15 минут
+      process.env.ACCESS_TOKEN_SECRET || "youraccesstokensecret",
+      { expiresIn: "30m" } // Access токен действителен 30 минут
     );
 
     const refreshToken = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.REFRESH_TOKEN_SECRET || 'yourrefreshtokensecret',
-      { expiresIn: '7d' } // Refresh токен действителен 7 дней
+      process.env.REFRESH_TOKEN_SECRET || "yourrefreshtokensecret",
+      { expiresIn: "7d" } // Refresh токен действителен 7 дней
     );
 
     res.status(200).json({ accessToken, refreshToken });
   } catch (error) {
-    console.error('Ошибка при логине:', error);
-    res.status(500).json({ message: 'Ошибка сервера' });
+    console.error("Ошибка при логине:", error);
+    res.status(500).json({ message: "Ошибка сервера" });
   }
 });
 
@@ -268,24 +268,24 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
  *         description: Внутренняя ошибка сервера.
  */
 // POST /auth/refresh - обновление access-токена
-router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
+router.post("/refresh", async (req: Request, res: Response): Promise<void> => {
   try {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      res.status(400).json({ message: 'Refresh-токен обязателен' });
+      res.status(400).json({ message: "Refresh-токен обязателен" });
       return;
     }
 
     // Проверяем refresh-токен
     jwt.verify(
       refreshToken,
-      process.env.REFRESH_TOKEN_SECRET || 'yourrefreshtokensecret',
+      process.env.REFRESH_TOKEN_SECRET || "yourrefreshtokensecret",
       (err: VerifyErrors | null, decoded: any) => {
         if (err) {
           res
             .status(403)
-            .json({ message: 'Неверный или просроченный refresh-токен' });
+            .json({ message: "Неверный или просроченный refresh-токен" });
           return;
         }
 
@@ -296,15 +296,15 @@ router.post('/refresh', async (req: Request, res: Response): Promise<void> => {
         };
         const newAccessToken = jwt.sign(
           payload,
-          process.env.ACCESS_TOKEN_SECRET || 'youraccesstokensecret',
-          { expiresIn: '15m' }
+          process.env.ACCESS_TOKEN_SECRET || "youraccesstokensecret",
+          { expiresIn: "30m" }
         );
         res.status(200).json({ accessToken: newAccessToken });
       }
     );
   } catch (error) {
-    console.error('Ошибка при обновлении токена:', error);
-    res.status(500).json({ message: 'Ошибка сервера' });
+    console.error("Ошибка при обновлении токена:", error);
+    res.status(500).json({ message: "Ошибка сервера" });
   }
 });
 
